@@ -5,12 +5,6 @@ import math
 from os import system
 from bpy.props import *
 
-#def get_rotation(obj):
-#    matrix_rotation = obj.orientation
-#    euler_rotation = matrix_rotation.to_euler()
-#    degrees_rotation = [math.degrees(a) for a in euler_rotation]
-#    return degrees_rotation
-
 
 def communicate_with_GenImplicit_via_json(json_file_name):
 
@@ -36,9 +30,9 @@ def communicate_with_GenImplicit_via_json(json_file_name):
                      'dim_x'    : obj.dimensions.x ,
                      'dim_y'    : obj.dimensions.y , 
                      'dim_z'    : obj.dimensions.z ,
-                     'scale_x'  : abs(obj.scale.x) ,
-                     'scale_y'  : abs(obj.scale.y) , 
-                     'scale_z'  : abs(obj.scale.z) ,
+                     'scale_x'  : obj.scale.x ,
+                     'scale_y'  : obj.scale.y , 
+                     'scale_z'  : obj.scale.z ,
                      'rot_x'  : x_rotation ,
                      'rot_y'  : y_rotation , 
                      'rot_z'  : z_rotation ,
@@ -64,9 +58,9 @@ def communicate_with_GenImplicit_via_json(json_file_name):
 
 
 
-
-
-
+#
+#  Run render only from script! NOT GUI (contexts won't match)
+#
 def gen_implicit_render_handler_pre(self):
    #gen_implicit_render_handler_post(scn)
    scn = bpy.context.scene
@@ -76,7 +70,9 @@ def gen_implicit_render_handler_pre(self):
 
 
 
-
+#
+#  Run render only from script! NOT GUI (contexts won't match)
+#
 def gen_implicit_render_handler_post(self):
    scn = bpy.context.scene
    #postfix = "." + str(scn.frame_current)
@@ -87,17 +83,7 @@ def gen_implicit_render_handler_post(self):
    bpy.ops.object.select_pattern(pattern=name_of_import)
    bpy.ops.object.delete() 
 
-   #ob = scn.objects.get("Test2.Stl")
-   #print(ob)
-   #if ob is not None:
-        #bpy.context.active_object.mode_set(mode='OBJECT')
-        #bpy.ops.object.select_all(action='DESELECT')
-        #ob.select = True
-        #bpy.context.active_object.delete()
-        #print("deleted!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-=-=-=-==========-=-=-")
 
-
-   #print("xxxxxxxxxxxdddddddddddddddd")
 
 
 
@@ -177,18 +163,18 @@ class GenImplicit(bpy.types.Panel):
 	     
 
 
-def genImplicitProperties(scn):
-   bpy.types.Scene.mesh_quality_draft = FloatProperty(
-        name = "Mesh quality draft" 
-        ,description = "Enter a float"
-        ,default = 0.2
-        ,min = 0.01
-        #,max = 999999999999
-        )
+#def genImplicitProperties(scn):
+#   bpy.types.Scene.mesh_quality_draft = FloatProperty(
+#        name = "Mesh quality draft" 
+#        ,description = "Enter a float"
+#        ,default = 0.2
+#        ,min = 0.01
+#        #,max = 999999999999
+#        )
 
    bpy.types.Scene.mesh_quality_full = FloatProperty(
          name = "Mesh quality full" 
-        ,description = "Enter a float"
+        ,description = "Affects density of resulting mesh. Less is more dense"
         ,default = 0.01
         ,min = 0.01
         #,max = 999999999999
@@ -196,7 +182,7 @@ def genImplicitProperties(scn):
 
    bpy.types.Scene.overall_rounding = FloatProperty(
          name = "Overall rounding" 
-        ,description = "Enter a float"
+        ,description = "Rounding radius used when groups joined together"
         ,default = 0
         ,min = 0
         #,max = 999999999999
@@ -206,7 +192,7 @@ def genImplicitProperties(scn):
 
    bpy.types.Scene.working_directory = StringProperty(
          name = "Working directory")
-   scn['working_directory'] = "/media/sda2/sda2/temp/anim/"
+   scn['working_directory'] = "/tmp/"
 
    bpy.types.Scene.json_file = StringProperty(
          name = "Json file")
@@ -214,16 +200,16 @@ def genImplicitProperties(scn):
 
    bpy.types.Scene.stl_file = StringProperty(
          name = "stl file")
-   scn['stl_file'] = "test2.stl"
+   scn['stl_file'] = "data.stl"
 
    bpy.types.Scene.name_of_import = StringProperty(
          name = "Name of import")
-   scn['name_of_import'] = "Test2.Stl"
+   scn['name_of_import'] = "Data"
 
 
    bpy.types.Scene.frame_start_ = IntProperty(
        name = "Frame start" 
-      ,description = "Enter an integer"
+      #,description = "Enter an integer"
       ,default = 0
       #,min = -9999999
       #,max =  9999999
@@ -232,7 +218,7 @@ def genImplicitProperties(scn):
 
    bpy.types.Scene.frame_end_ = IntProperty(
        name = "Frame end"
-      ,description = "Enter an integer"
+      #,description = "Enter an integer"
       ,default = 0
       #,min = -9999999
       #,max =  9999999
@@ -241,7 +227,7 @@ def genImplicitProperties(scn):
 
    bpy.types.Scene.json_only = BoolProperty(
        name = "Json only" 
-      ,description = "Enter an Bool"
+      ,description = "Do not run GenImplicit"
       ,default = False
       #,min = -9999999
       #,max =  9999999
@@ -249,7 +235,7 @@ def genImplicitProperties(scn):
 
    bpy.types.Scene.render_ready = BoolProperty(
        name = "Render ready" 
-      ,description = "Enter an Bool"
+      ,description = "Set handlers for rendering"
       ,default = False
       ,update = render_ready_callback
       #,min = -9999999
@@ -266,9 +252,6 @@ class GEN_MESH_OT_GenImplicit(bpy.types.Operator):
     bl_idname = "gen_mesh.gen_mesh"
     bl_label = "Single update"
 
-    #scn = bpy.context.scene
-    #json_file_name = bpy.props.StringProperty()
-
     
 
     def execute(self, context):
@@ -282,9 +265,6 @@ class GEN_MESH_OT_GenImplicit(bpy.types.Operator):
 class GEN_MESH_OT_GenImplicit_import_current(bpy.types.Operator):
     bl_idname = "gen_mesh.gen_mesh_import_current"
     bl_label = "Import current"
-
-    #scn = bpy.context.scene
-    #json_file_name = bpy.props.StringProperty()
 
     
 
@@ -313,7 +293,7 @@ class GEN_MESH_OT_GenImplicit_anim(bpy.types.Operator):
 bpy.utils.register_module(__name__)
 
 
-GenImplicit_exec   = '/home/hokum/Documents/haskell/blender_haskell/gen_mesh/genimplicit/.cabal-sandbox/bin/GenImplicit'
+GenImplicit_exec   = 'GenImplicit' #must be in your $PATH
 
 
 
@@ -334,8 +314,6 @@ def gen_implicit_general(postfix):
 
    overall_rounding   = scn.overall_rounding
 
-   #print("Communicate to %s!" % self.json_file_name)
-   #bpy.context.scene.frame_set(5)
    communicate_with_GenImplicit_via_json(json_file_dir + json_file_name_base);
 
    if not json_only:
@@ -369,16 +347,6 @@ def gen_implicit_import(postfix):
 
 def gen_implicit_import_current_frame():
    scn = bpy.context.scene
-
-   #bpy.ops.object.select_all(action='DESELECT')
-   #bpy.ops.object.select_pattern(pattern='Test2.Stl')
-   #bpy.ops.object.delete() 
-
-   #for ob in scn.objects:
-   #   print (ob)
-   #   ob.select = ob.type == 'MESH' and ob.name.startswith('Test2.Stl')
-   #   bpy.ops.object.delete()
-
 
    gen_implicit_import("." + str(scn.frame_current));
    

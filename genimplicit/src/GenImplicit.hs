@@ -5,16 +5,16 @@ import qualified Data.List as L
 import qualified Data.Text as T
 import Control.Applicative
 import Control.Monad
-import Control.Monad.State.Lazy as S
+import qualified Control.Monad.State.Lazy as S
+import qualified Control.Monad.Writer.Lazy as W
 import qualified Data.ByteString.Lazy as B
-import Network.HTTP.Conduit (simpleHttp)
+--import Network.HTTP.Conduit (simpleHttp)
 import GHC.Generics
 
 import qualified Graphics.Implicit as I
 import qualified Graphics.Implicit.Primitives as IP
 
 import qualified Cmd_arguments as CmdA
---import qualified System.IO as SIO
 import qualified System.Environment as SE
 
 -- | Type of each JSON entry in record syntax.
@@ -71,12 +71,6 @@ main = do
  a<- SE.getArgs
  routine a
 
-{-
-do_stuff bol = do
-   I.writeSTL 0.1 "../test1.stl" $ render bol
-      --I.union $ toSymbolicObj3_list bol
--}
-
 
 routine :: [String] -> IO ()
 routine args
@@ -87,8 +81,8 @@ routine args
       d <- (eitherDecode <$> getJSON jif) :: IO (Either String BlenderData)
       case d of
         Left err -> putStrLn err
-        Right bo -> I.writeSTL mq stl_ef $ S.evalState (render' bo) gs
-                    --putStrLn $ render_debug bo
+        Right bo ->
+            I.writeSTL mq stl_ef $ S.evalState (render' bo) gs
 
       where
         mq = (\(CmdA.InputArguments {CmdA.mesh_quality = (Just d)}) -> d) inputArgs'
@@ -100,20 +94,8 @@ routine args
                 {CmdA.overall_union_rounding = (Just d)}
                 ) -> d) inputArgs'
            })
-   --tag_DMap' = CmdA.tag_DMap args
+
    inputArgs' = CmdA.inputArgs $ CmdA.tag_DMap args
-
-
-{-
-toSymbolicObj3_list :: [BlenderObject] -> [I.SymbolicObj3]
-toSymbolicObj3_list bol =
-   map (\(BlenderObject {x=x,y=y,z=z})-> I.rect3R 0 (x-1,y-1,z-1) (x+1,y+1,z+1)) bol
-
-
-same_group :: BlenderObject -> BlenderObject -> Bool
-same_group (BlenderObject {group=g1})
-           (BlenderObject {group=g2}) = (/= []) $ L.intersect g1 g2
--}
 
 
 
@@ -138,15 +120,6 @@ spread_by_groupes groupes b = filter filter_case' $
    filter_case' (_, [])  = False
    filter_case' (_, _ )  = True
 
-{-
-render :: BlenderData -> I.SymbolicObj3
-render blender_data@(
-  BlenderData {objects= bos
-              ,groups = groups
-              })
-   = render_groups_together $ spread_by_groupes groups bos
-   -}
-
 
 
 render_debug :: BlenderData -> String
@@ -163,7 +136,7 @@ render' blender_data@(
               ,groups = groups
               })
    = do
-      (Generation_settings {overall_union_rounding=rounding}) <- get
+      (Generation_settings {overall_union_rounding=rounding}) <- S.get
 
       case rounding == 0.0 of
          True ->  return $ render_groups_together $ spread_by_groupes groups bos
@@ -187,7 +160,7 @@ render_groups_together groups = I.union $ process_all_groups groups
 
 render_groups_togetherR :: [(T.Text, [BlenderObject])] -> S.State Generation_settings I.SymbolicObj3
 render_groups_togetherR groups = do
-   (Generation_settings {overall_union_rounding=rounding}) <- get
+   (Generation_settings {overall_union_rounding=rounding}) <- S.get
    return $ I.unionR rounding $ process_all_groups groups
 
 
@@ -196,15 +169,6 @@ process_all_groups :: [(T.Text, [BlenderObject])] ->
                       [I.SymbolicObj3]
 process_all_groups groups = map (process_group) $ groups
 
-{-
-process_all_groups :: [(T.Text, [BlenderObject])] ->
-                      [I.SymbolicObj3]
-process_all_groups groups = map (\(Just x) -> x) $ L.filter not_nothing $
-   map (process_group) $ groups
-   where
-   not_nothing Nothing = False
-   not_nothing (Just _)= True
--}
 
 
 
@@ -215,14 +179,6 @@ process_group (group_name, b) = I.unionR rounding $ make_objects b
    rounding = (\(Group_settings {group_rounding=gr})-> gr) $ parse_group_name group_name
 
 
-{-
-process_group :: (T.Text, [BlenderObject]) -> Maybe I.SymbolicObj3
-process_group (_, []) = Nothing
-process_group (group_name, b) = Just $ I.unionR rounding $ make_objects b
-   where
-   rounding = (\(Group_settings {group_rounding=gr})-> gr) gs
-   gs       = parse_group_name group_name
--}
 
 
 
@@ -234,16 +190,8 @@ data Group_settings =
 
 parse_group_name :: T.Text -> Group_settings
 parse_group_name "" = Group_settings {group_rounding=0}
---parse_group_name _ = Group_settings {group_rounding=0}
 parse_group_name group_name =
    Group_settings {group_rounding = read $ L.drop 2 $ (L.last.L.words.T.unpack) group_name}
-   {-r $
-   L.filter (\t-> ("r=" ==) $ L.take 2 t) $
-   L.words $ T.unpack group_name
-   }
-   where
-   r [] = 0
-   r r' = read $ L.drop 2 $ L.head r'-}
 
 
 make_objects :: [BlenderObject] -> [I.SymbolicObj3]
@@ -279,7 +227,6 @@ make_cube (BlenderObject {  x =x
                            ,rounding=rnd
                          }) =
    I.translate (x, y, z) $ IP.rotate3V (rw)  (rx,  ry, rz) $
-   --I.translate (x, y, z) $ IP.rotate3 ( ax,  ay,  az) $
       I.rect3R rnd bottom_left top_right
    where
    bottom_left = (- dx/2, - dy/2, - dz/2)
@@ -291,9 +238,6 @@ make_sphere :: BlenderObject -> I.SymbolicObj3
 make_sphere (BlenderObject {x =x
                            ,y =y
                            ,z =z
-                           ,dim_x=dx
-                           ,dim_y=dy
-                           ,dim_z=dz
                            ,scale_x=sx
                            ,scale_y=sy
                            ,scale_z=sz
@@ -301,32 +245,24 @@ make_sphere (BlenderObject {x =x
                            ,rot_y=ry
                            ,rot_z=rz
                            ,rot_w=rw
-                           ,rounding=rnd
                          }) =
    I.translate (x, y, z) $ IP.rotate3V (rw)  (rx,  ry, rz) $ I.scale (sx, sy, sz) $
-   --I.translate (x, y, z) $ IP.rotate3 ( ax,  ay,  az) $
       I.sphere 1
-   --where
-   --radius = (dx/sx + dy/sy + dy/sy)/3
 
 
 
 make_cylinder :: BlenderObject -> I.SymbolicObj3
 make_cylinder (BlenderObject {x =x
-                           ,y =y
-                           ,z =z
-                           ,dim_x=dx
-                           ,dim_y=dy
-                           ,dim_z=dz
-                           ,scale_x=sx
-                           ,scale_y=sy
-                           ,scale_z=sz
-                           ,rot_x=rx
-                           ,rot_y=ry
-                           ,rot_z=rz
-                           ,rot_w=rw
-                           ,rounding=rnd
-                         }) =
+                             ,y =y
+                             ,z =z
+                             ,scale_x=sx
+                             ,scale_y=sy
+                             ,scale_z=sz
+                             ,rot_x=rx
+                             ,rot_y=ry
+                             ,rot_z=rz
+                             ,rot_w=rw
+                             }) =
    I.translate (x, y, z) $ IP.rotate3V (rw)  (rx,  ry, rz) $ I.scale (sx, sy, sz) $
       I.cylinder 1 2
 
