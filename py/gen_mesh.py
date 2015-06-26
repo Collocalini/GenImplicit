@@ -1,4 +1,17 @@
+######################################################################
+##
+## Module      :  gen_mesh
+## Copyright   :  (c) hokum
+## License     :  GPL3
+##
+## Maintainer  :
+## Stability   :  experimental
+## Portability :
+##
+## |
+#######################################################################
 
+import bpy
 import json
 import io
 import math
@@ -163,7 +176,8 @@ class GenImplicit(bpy.types.Panel):
 	     
 
 
-#def genImplicitProperties(scn):
+def genImplicitProperties(scn):
+
 #   bpy.types.Scene.mesh_quality_draft = FloatProperty(
 #        name = "Mesh quality draft" 
 #        ,description = "Enter a float"

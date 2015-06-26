@@ -2,11 +2,10 @@ name: GenImplicit
 version: 0.1
 cabal-version: 1.10
 build-type: Simple
-license: BSD3
+license: GPL3
 license-file: LICENSE
 copyright: (c) hokum
-stability: stable
-description:
+stability: experimental
 author: hokum
 data-dir: ""
 
@@ -19,6 +18,6 @@ executable GenImplicit
     default-language: Haskell2010
     include-dirs: src
     hs-source-dirs: src
-    other-modules: Cmd_arguments
+    other-modules: Cmd_arguments Generation_branch Genimplicit_types
     ghc-options: -O2 -threaded
 

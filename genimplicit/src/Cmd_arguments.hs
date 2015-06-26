@@ -1,11 +1,11 @@
 -----------------------------------------------------------------------------
 --
 -- Module      :  Cmd_arguments
--- Copyright   :
--- License     :  PublicDomain
+-- Copyright   :  (c) hokum
+-- License     :  GPL3
 --
 -- Maintainer  :
--- Stability   :
+-- Stability   :  experimental
 -- Portability :
 --
 -- |
