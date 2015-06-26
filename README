@@ -1,0 +1,2 @@
+GenImplicit is a python script for Blender and a haskell ImplicitCAD wrapper aimed at bringing ImplicitCAD features to Blender. At the moment you can form a shape in Blender using scaled cubes, spheres, cylinders, then assign them to separate smoothing groups and then join together into a single mesh. 
+
