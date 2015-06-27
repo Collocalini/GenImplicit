@@ -2,7 +2,7 @@ name: GenImplicit
 version: 0.1
 cabal-version: 1.10
 build-type: Simple
-license: GPL3
+license: GPL-3
 license-file: LICENSE
 copyright: (c) hokum
 stability: experimental

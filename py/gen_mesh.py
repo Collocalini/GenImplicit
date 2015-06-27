@@ -30,6 +30,7 @@ def communicate_with_GenImplicit_via_json(json_file_name):
          dummy.matrix_world = obj.matrix_world
          dummy.rotation_mode = 'AXIS_ANGLE'
          w_rotation, x_rotation, y_rotation, z_rotation  = dummy.rotation_axis_angle
+         x_loc, y_loc, z_loc = dummy.matrix_world.to_translation()
          dummy.rotation_mode = 'XYZ'
 
          #x_rotation, y_rotation, z_rotation  = obj.rotation_euler
@@ -37,9 +38,9 @@ def communicate_with_GenImplicit_via_json(json_file_name):
          j.append ({ 'name' : obj.name ,
                      'type_': obj["type"] ,
                      'group': list(map(lambda g: g.name, list(obj.users_group))),
-                     'x'    : obj.location.x ,
-                     'y'    : obj.location.y , 
-                     'z'    : obj.location.z ,
+                     'x'    : x_loc ,
+                     'y'    : y_loc , 
+                     'z'    : z_loc ,
                      'dim_x'    : obj.dimensions.x ,
                      'dim_y'    : obj.dimensions.y , 
                      'dim_z'    : obj.dimensions.z ,
@@ -334,7 +335,8 @@ def gen_implicit_general(postfix):
       system( GenImplicit_exec + " --json-import-file " + json_file_dir + json_file_name_base 
                                + " --stl-export-file "  + stl_file_dir  + stl_file_name_base 
                                + " --mesh-quality "     + str(mesh_quality) 
-                               + " --overall-union-rounding " + str(overall_rounding) );
+                               + " --overall-union-rounding " + str(overall_rounding) 
+                               + " +RTS -N4 -RTS");
       
 
 
