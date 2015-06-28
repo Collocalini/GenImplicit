@@ -25,7 +25,8 @@ def communicate_with_GenImplicit_via_json(json_file_name):
    dummy = bpy.data.objects['Dummy']
    dummy.rotation_mode = 'XYZ'
 
-   for obj in bpy.data.objects:
+   #for obj in bpy.data.objects:
+   for obj in bpy.data.scenes['Scene.002'].objects:
       if "toOpenSCAD" in obj:
          dummy.matrix_world = obj.matrix_world
          dummy.rotation_mode = 'AXIS_ANGLE'
