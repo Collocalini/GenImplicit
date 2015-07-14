@@ -6,18 +6,19 @@ license: GPL-3
 license-file: LICENSE
 copyright: (c) hokum
 stability: experimental
+description:
 author: hokum
 data-dir: ""
 
 executable GenImplicit
     build-depends: aeson -any, base -any, bytestring -any,
                    containers -any, http-conduit -any, implicit -any, matrix -any,
-                   mtl -any, text -any
+                   mtl -any, parsec -any, text -any
     main-is: GenImplicit.hs
     buildable: True
     default-language: Haskell2010
     include-dirs: src
     hs-source-dirs: src
-    other-modules: Cmd_arguments Generation_branch Genimplicit_types
+    other-modules: Genimplicit_types Generation_branch Cmd_arguments
     ghc-options: -O2 -threaded
 

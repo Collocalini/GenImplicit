@@ -33,6 +33,7 @@ import qualified Graphics.Implicit.Primitives as IP
 import qualified Data.List as L
 import qualified Data.Text as T
 import qualified Data.Maybe as M
+import qualified Text.ParserCombinators.Parsec as P
 
 import Genimplicit_types
 
@@ -125,14 +126,50 @@ process_group (group_name, b) = do
 
 
 data Group_settings =
-   Group_settings {group_rounding :: Float} deriving (Show)
+     Group_settings {group_rounding :: Float}
+    |Radius Float deriving (Show)
+
+
+group_settings = Group_settings {group_rounding=0}
+
+give_rounding_radius :: [Group_settings] -> Float
+give_rounding_radius g = (\(Radius x)-> x) $ M.fromMaybe (Radius 0) $ L.find is_radius g
+   where
+   is_radius :: Group_settings -> Bool
+   is_radius (Radius _) = True
+   is_radius _          = False
 
 
 
 parse_group_name :: T.Text -> Group_settings
-parse_group_name "" = Group_settings {group_rounding=0}
+parse_group_name "" = group_settings
 parse_group_name group_name =
-   Group_settings {group_rounding = read $ L.drop 2 $ (L.last.L.words.T.unpack) group_name}
+   case (P.parse (group_name_parser) "(unknown)" $ T.unpack group_name) of
+      Left e -> group_settings
+      Right r -> r
+
+
+   --Group_settings {group_rounding = read $ L.drop 2 $ (L.last.L.words.T.unpack) group_name}
+
+
+group_name_parser :: P.Parser Group_settings
+group_name_parser = do
+   P.manyTill P.anyChar (P.string $ "p:")
+   p<- P.sepBy (P.choice [rounding_radius_option]) (P.many $ P.char ' ')
+   return $ Group_settings {group_rounding = give_rounding_radius p}
+
+
+
+
+
+
+rounding_radius_option :: P.Parser Group_settings
+rounding_radius_option = do
+   P.string $ "r="
+   rl<- P.manyTill P.digit (P.char '.')
+   rr<- P.manyTill P.digit (P.eof)
+   return $ Radius $ read $ rl ++ "." ++ rr
+
 
 
 make_objects :: [BlenderObject] -> Log [I.SymbolicObj3]
