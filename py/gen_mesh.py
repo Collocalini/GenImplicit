@@ -19,46 +19,47 @@ from os import system
 from bpy.props import *
 
 
-def communicate_with_GenImplicit_via_json(json_file_name):
+def communicate_with_GenImplicit_via_json(json_file_name, export_group, Scene):
 
    j = []
    dummy = bpy.data.objects['Dummy']
    dummy.rotation_mode = 'XYZ'
 
    #for obj in bpy.data.objects:
-   for obj in bpy.data.scenes['Scene.002'].objects:
-      if (obj.name in bpy.data.groups['export1'].objects) and ("toOpenSCAD" in obj) :
-         
-         dummy.matrix_world = obj.matrix_world
-         dummy.rotation_mode = 'AXIS_ANGLE'
-         w_rotation, x_rotation, y_rotation, z_rotation  = dummy.rotation_axis_angle
-         x_loc, y_loc, z_loc = dummy.matrix_world.to_translation()
-         dummy.rotation_mode = 'XYZ'
+   for obj in bpy.data.scenes[Scene].objects:
+      if not (export_group == ''):
+         if (obj.name in bpy.data.groups[export_group].objects) and ("toOpenSCAD" in obj) :
+            
+            dummy.matrix_world = obj.matrix_world
+            dummy.rotation_mode = 'AXIS_ANGLE'
+            w_rotation, x_rotation, y_rotation, z_rotation  = dummy.rotation_axis_angle
+            x_loc, y_loc, z_loc = dummy.matrix_world.to_translation()
+            dummy.rotation_mode = 'XYZ'
 
-         #x_rotation, y_rotation, z_rotation  = obj.rotation_euler
-         #w_rotation, x_rotation, y_rotation, z_rotation  = obj.rotation_axis_angle
-         j.append ({ 'name' : obj.name ,
-                     'type_': obj["type"] ,
-                     'group': list(map(lambda g: g.name, list(obj.users_group))),
-                     'x'    : x_loc ,
-                     'y'    : y_loc , 
-                     'z'    : z_loc ,
-                     'dim_x'    : obj.dimensions.x ,
-                     'dim_y'    : obj.dimensions.y , 
-                     'dim_z'    : obj.dimensions.z ,
-                     'scale_x'  : obj.scale.x ,
-                     'scale_y'  : obj.scale.y , 
-                     'scale_z'  : obj.scale.z ,
-                     'rot_x'  : x_rotation ,
-                     'rot_y'  : y_rotation , 
-                     'rot_z'  : z_rotation ,
-                     'rot_w'  : w_rotation 
-                  })
-         if "rounding" in obj:
-            j[-1].update({'rounding' : obj["rounding"]})
-         else:
-            j[-1].update({'rounding' : 0.0})
-         #print(j)
+            #x_rotation, y_rotation, z_rotation  = obj.rotation_euler
+            #w_rotation, x_rotation, y_rotation, z_rotation  = obj.rotation_axis_angle
+            j.append ({ 'name' : obj.name ,
+                        'type_': obj["type"] ,
+                        'group': list(map(lambda g: g.name, list(obj.users_group))),
+                        'x'    : x_loc ,
+                        'y'    : y_loc , 
+                        'z'    : z_loc ,
+                        'dim_x'    : obj.dimensions.x ,
+                        'dim_y'    : obj.dimensions.y , 
+                        'dim_z'    : obj.dimensions.z ,
+                        'scale_x'  : obj.scale.x ,
+                        'scale_y'  : obj.scale.y , 
+                        'scale_z'  : obj.scale.z ,
+                        'rot_x'  : x_rotation ,
+                        'rot_y'  : y_rotation , 
+                        'rot_z'  : z_rotation ,
+                        'rot_w'  : w_rotation 
+                     })
+            if "rounding" in obj:
+               j[-1].update({'rounding' : obj["rounding"]})
+            else:
+               j[-1].update({'rounding' : 0.0})
+            #print(j)
 
    data = {
              'objects' : j 
@@ -171,6 +172,7 @@ class GenImplicit(bpy.types.Panel):
         layout.prop(scn, 'json_file')
         layout.prop(scn, 'stl_file')
         layout.prop(scn, 'name_of_import')
+        layout.prop(scn, 'export_groups')
         layout.prop(scn, 'frame_start_')
         layout.prop(scn, 'frame_end_')
         layout.operator("gen_mesh.gen_mesh_anim")
@@ -223,6 +225,11 @@ def genImplicitProperties(scn):
          name = "Name of import")
    scn['name_of_import'] = "Data"
 
+   bpy.types.Scene.export_groups = StringProperty(
+         name = "Export groups"
+        ,description = "Groups are supposed to be in text datablock the name of which you should enter")
+   scn['export_groups'] = scn['working_directory'] + "export_groups"
+
 
    bpy.types.Scene.frame_start_ = IntProperty(
        name = "Frame start" 
@@ -273,6 +280,7 @@ class GEN_MESH_OT_GenImplicit(bpy.types.Operator):
 
     def execute(self, context):
 
+      
       gen_implicit_general("")
       gen_implicit_import("")
 
@@ -313,12 +321,19 @@ bpy.utils.register_module(__name__)
 GenImplicit_exec   = 'GenImplicit' #must be in your $PATH
 
 
+#def export_json_file(directory, base_name, postfix, group)
+#   directory + base_name + "." + postfix + "." + group
+
+#export_json_file = bpy.context.scene.working_directory  + bpy.context.scene.json_file + postfix + 
+
+
 
 
 def gen_implicit_general(postfix):
 
    scn = bpy.context.scene
 
+   export_groups_file  = scn.export_groups
    json_file_name_base = scn.json_file + postfix
    json_file_dir       = scn.working_directory 
 
@@ -331,19 +346,27 @@ def gen_implicit_general(postfix):
 
    overall_rounding   = scn.overall_rounding
 
-   communicate_with_GenImplicit_via_json(json_file_dir + json_file_name_base);
+   file = open(export_groups_file, "r")
+   for line in file:
+      export_group = line.strip(" \t\r\n[]")
+      
+      communicate_with_GenImplicit_via_json(json_file_dir 
+                                          + json_file_name_base 
+                                          + "." + export_group
+                                          , export_group, scn.name);
 
-   if not json_only:
-      system( GenImplicit_exec + " --json-import-file " + json_file_dir + json_file_name_base 
-                               + " --stl-export-file "  + stl_file_dir  + stl_file_name_base 
-                               + " --mesh-quality "     + str(mesh_quality) 
-                               + " --overall-union-rounding " + str(overall_rounding) 
-                               + " +RTS -N4 -RTS");
+      if not json_only:
+         system( GenImplicit_exec + " --json-import-file " + json_file_dir + json_file_name_base + "." + export_group
+                                  + " --stl-export-file "  + stl_file_dir  + stl_file_name_base + "." + export_group
+                                  + " --mesh-quality "     + str(mesh_quality) 
+                                  + " --overall-union-rounding " + str(overall_rounding) 
+                                  + " +RTS -N4 -RTS");
       
 
 
 
 def gen_implicit_import(postfix):
+   
 
    scn = bpy.context.scene
 
@@ -355,11 +378,21 @@ def gen_implicit_import(postfix):
     
    mesh_quality       = scn.mesh_quality_full
 
-   bpy.ops.import_mesh.stl(filepath=stl_file_dir + stl_file_name_base
-                        # , filter_glob="*.stl"
-                         , files=[{"name": stl_file_name_base}] 
-                         , directory=stl_file_dir);
-   bpy.ops.object.shade_smooth();
+   export_groups_file  = scn.export_groups
+
+   json_only          = scn.json_only
+
+   if not json_only:
+
+      file = open(export_groups_file, "r")
+      for line in file:
+         export_group = line.strip(" \t\r\n[]")
+
+         bpy.ops.import_mesh.stl(filepath=stl_file_dir + stl_file_name_base + "." + export_group
+                              # , filter_glob="*.stl"
+                               , files=[{"name": stl_file_name_base + "." + export_group}] 
+                               , directory=stl_file_dir);
+         bpy.ops.object.shade_smooth();
    
 
 
