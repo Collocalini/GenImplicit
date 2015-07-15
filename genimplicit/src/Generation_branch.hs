@@ -127,7 +127,9 @@ process_group (group_name, b) = do
 
 data Group_settings =
      Group_settings {group_rounding :: Float}
-    |Radius Float deriving (Show)
+    |Radius Float
+    |Rubbish
+    deriving (Show)
 
 
 group_settings = Group_settings {group_rounding=0}
@@ -149,17 +151,20 @@ parse_group_name group_name =
       Right r -> r
 
 
-   --Group_settings {group_rounding = read $ L.drop 2 $ (L.last.L.words.T.unpack) group_name}
-
 
 group_name_parser :: P.Parser Group_settings
 group_name_parser = do
    P.manyTill P.anyChar (P.string $ "p:")
-   p<- P.sepBy (P.choice [rounding_radius_option]) (P.many $ P.char ' ')
+   P.try P.spaces
+   p<- P.sepEndBy try_properties (P.spaces)
    return $ Group_settings {group_rounding = give_rounding_radius p}
 
 
-
+try_properties =
+      (P.choice [rounding_radius_option,
+                 do P.many1 $ P.choice [P.many1 P.alphaNum
+                                       ,P.many1 (P.oneOf ":;=,.")]
+                    return Rubbish])
 
 
 
