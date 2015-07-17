@@ -68,10 +68,13 @@ render blender_data@(
 spread_by_groupes :: [T.Text] -> [BlenderObject] -> [(T.Text, [BlenderObject])]
 spread_by_groupes groupes b = filter filter_case' $
    ("", objects_that_are_not_in_any_group b):
-   map (\g-> (g, filter (object_is_in_specified_group g) b) ) groupes
+       (
+       map (\g-> (g, filter (object_is_in_specified_group g) b) ) $
+          filter filter_case'' groupes
+       )
    where
    groups_object_is_in :: BlenderObject -> [T.Text]
-   groups_object_is_in (BlenderObject {group=g'}) = g'
+   groups_object_is_in (BlenderObject {group=g'}) = filter filter_case'' g'
 
    object_is_in_specified_group :: T.Text -> BlenderObject -> Bool
    object_is_in_specified_group g b = elem g $ groups_object_is_in b
@@ -83,10 +86,16 @@ spread_by_groupes groupes b = filter filter_case' $
    filter_case (_, [])  = True
    filter_case (_, _ )  = False
 
+
+
    filter_case' (_, [])  = False
    filter_case' (_, _ )  = True
 
 
+   filter_case'' group_name =
+     case (P.parse (group_name_parser) "(unknown)" $ T.unpack group_name) of
+          Left e -> False
+          Right r -> True
 
 
 
@@ -178,6 +187,7 @@ rounding_radius_option = do
 
 
 make_objects :: [BlenderObject] -> Log [I.SymbolicObj3]
+make_objects [] = return []
 make_objects bos = do
    m <- mapM make_object bos
    return $ M.catMaybes m
