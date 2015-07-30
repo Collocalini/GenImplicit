@@ -31,9 +31,11 @@ import qualified Data.Map as DMap
 
 data InputArguments = InputArguments {
     json_import_file :: Maybe FilePath
+   ,json_export_file :: Maybe FilePath
    ,stl_export_file  :: Maybe FilePath
    ,mesh_quality     :: Maybe Float
    ,overall_union_rounding :: Maybe Float
+   ,just_feathers    :: Maybe Bool
    }
 
 
@@ -42,9 +44,11 @@ data InputArguments = InputArguments {
 inputArgs :: DMap.Map String String -> InputArguments
 inputArgs tm = InputArguments {
    json_import_file = argument   argument_json_import_file   default_json_import_file
+  ,json_export_file = argument   argument_json_export_file   default_json_export_file
   ,stl_export_file  = argument   argument_stl_export_file    default_stl_export_file
   ,mesh_quality     = float_argument   argument_mesh_quality    default_mesh_quality
   ,overall_union_rounding = float_argument   argument_overall_union_rounding   default_overall_union_rounding
+  ,just_feathers    = bool_argument   argument_just_feathers   default_just_feathers
   }
   where
   file_argument :: String -> String -> Maybe FilePath
@@ -56,6 +60,16 @@ inputArgs tm = InputArguments {
     try_read Nothing = Nothing
     try_read (Just "") = Nothing
     try_read (Just s)  = Just $ read s
+
+
+  bool_argument :: String -> String -> Maybe Bool
+  bool_argument argument_name default_value = try_read $ argument argument_name default_value
+    where
+    try_read Nothing = Nothing
+    try_read (Just "false") = Just False
+    try_read (Just "False") = Just False
+    try_read (Just "true") = Just True
+    try_read (Just "True") = Just True
 
   argument :: String -> String -> Maybe String
   argument argument_name default_value
@@ -71,6 +85,9 @@ inputArgs tm = InputArguments {
 argument_json_import_file = "json-import-file"
 default_json_import_file  = ""
 
+argument_json_export_file = "json-export-file"
+default_json_export_file  = ""
+
 argument_stl_export_file  = "stl-export-file"
 default_stl_export_file   = ""
 
@@ -80,12 +97,17 @@ default_mesh_quality      = "1"
 argument_overall_union_rounding = "overall-union-rounding"
 default_overall_union_rounding  = "0"
 
-flags = [
+argument_just_feathers = "just-feathers"
+default_just_feathers  = ""
 
+
+flags = [
+         argument_just_feathers
         ]
 
 options =  [
             argument_json_import_file
+           ,argument_json_export_file
            ,argument_stl_export_file
            ,argument_mesh_quality
            ,argument_overall_union_rounding
@@ -97,9 +119,11 @@ tag_DMap:: [String] -> DMap.Map String String
 tag_DMap [] = DMap.fromList [
         --("",""),
     (argument_json_import_file,       default_json_import_file)
+   ,(argument_json_export_file,       default_json_export_file)
    ,(argument_stl_export_file,        default_stl_export_file)
    ,(argument_mesh_quality,           default_mesh_quality)
    ,(argument_overall_union_rounding, default_overall_union_rounding)
+   ,(argument_just_feathers,          default_just_feathers)
    ]----]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]
 
 tag_DMap lst = DMap.union (DMap.fromList $ map (\(Just x) -> x) $ list_arguments lst) $

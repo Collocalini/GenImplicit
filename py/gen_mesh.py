@@ -75,6 +75,75 @@ def communicate_with_GenImplicit_via_json(json_file_name, export_group, Scene):
 
 
 
+
+
+
+
+
+def communicate_with_GenImplicit_via_json_feathers(json_file_name, export_group, Scene):
+
+   j = []
+   dummy = bpy.data.objects['Dummy']
+   dummy.rotation_mode = 'XYZ'
+
+   #for obj in bpy.data.objects:
+   for obj in bpy.data.scenes[Scene].objects:
+      if not (export_group == ''):
+         if (obj.name in bpy.data.groups[export_group].objects) and ("toOpenSCAD" in obj) and ("feathers" in obj):
+            
+            dummy.matrix_world = obj.matrix_world
+            dummy.rotation_mode = 'AXIS_ANGLE'
+            w_rotation, x_rotation, y_rotation, z_rotation  = dummy.rotation_axis_angle
+            x_loc, y_loc, z_loc = dummy.matrix_world.to_translation()
+            dummy.rotation_mode = 'XYZ'
+
+            j.append ({ 'name' : obj.name ,
+                        'type_': obj["type"] ,
+                        'group': list(map(lambda g: g.name, list(obj.users_group))),
+                        'feathers_number': obj["feathers"],
+                        'x'    : x_loc ,
+                        'y'    : y_loc , 
+                        'z'    : z_loc ,
+                        'dim_x'    : obj.dimensions.x ,
+                        'dim_y'    : obj.dimensions.y , 
+                        'dim_z'    : obj.dimensions.z ,
+                        'scale_x'  : obj.scale.x ,
+                        'scale_y'  : obj.scale.y , 
+                        'scale_z'  : obj.scale.z ,
+                        'rot_x'  : x_rotation ,
+                        'rot_y'  : y_rotation , 
+                        'rot_z'  : z_rotation ,
+                        'rot_w'  : w_rotation 
+                     })
+            if "rounding" in obj:
+               j[-1].update({'rounding' : obj["rounding"]})
+            else:
+               j[-1].update({'rounding' : 0.0})
+            #print(j)
+
+   data = {
+             'objects' : j 
+            ,'groups'  : list(map(lambda g: g.name, bpy.data.groups)),
+	       }
+
+
+   #'/home/hokum/Documents/haskell/blender_haskell/gen_mesh/data.json'
+   with io.open(json_file_name, 'w', encoding='utf-8') as f:
+      json.dump(data, f, ensure_ascii=False)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #  Run render only from script! NOT GUI (contexts won't match)
 #
