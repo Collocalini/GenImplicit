@@ -29,7 +29,7 @@ import qualified System.Environment as SE
 
 import Generation_branch
 import Genimplicit_types
-
+import Feathers
 
 
 
@@ -54,6 +54,7 @@ main = do
 
 routine :: [String] -> IO ()
 routine args
+   |feathers_branch_only = return ()
    |otherwise = output_stl_default
    where
 
@@ -66,16 +67,28 @@ routine args
             mapM B8.putStrLn w
             I.writeSTL mq stl_ef a
 
-      where
-        mq = (\(CmdA.InputArguments {CmdA.mesh_quality = (Just d)}) -> d) inputArgs'
-        jif = (\(CmdA.InputArguments {CmdA.json_import_file = (Just d)}) -> d) inputArgs'
-        stl_ef = (\(CmdA.InputArguments {CmdA.stl_export_file = (Just d)}) -> d) inputArgs'
-        gs = (Generation_settings
-           {
-            overall_union_rounding = (\(CmdA.InputArguments
-                {CmdA.overall_union_rounding = (Just d)}
-                ) -> d) inputArgs'
-           })
+   output_feathers = do
+      d <- (eitherDecode <$> getJSON jif) :: IO (Either String BlenderDataFeathers)
+      case d of
+        Left err -> putStrLn err
+        Right bo -> do
+            let (a, w) = RWS_.evalRWS (grow_feathers bo) () (Feather_settings {})
+            mapM B8.putStrLn w
+            B.putStrLn $ encode a
+
+
+ --     where
+   mq = (\(CmdA.InputArguments {CmdA.mesh_quality = (Just d)}) -> d) inputArgs'
+   jif = (\(CmdA.InputArguments {CmdA.json_import_file = (Just d)}) -> d) inputArgs'
+   jef = (\(CmdA.InputArguments {CmdA.json_export_file = (Just d)}) -> d) inputArgs'
+   stl_ef = (\(CmdA.InputArguments {CmdA.stl_export_file = (Just d)}) -> d) inputArgs'
+   gs = (Generation_settings
+       {
+        overall_union_rounding = (\(CmdA.InputArguments
+            {CmdA.overall_union_rounding = (Just d)}
+            ) -> d) inputArgs'
+       })
+   feathers_branch_only = (\(CmdA.InputArguments {CmdA.just_feathers = (Just d)}) -> d) inputArgs'
 
    inputArgs' = CmdA.inputArgs $ CmdA.tag_DMap args
 
