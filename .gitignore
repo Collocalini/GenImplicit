@@ -1,3 +1,4 @@
 genimplicit/dist/
 genimplicit/.cabal-sandbox/
+genimplicit/.cabal-sandbox_x64/
 genimplicit/cabal.sandbox.config

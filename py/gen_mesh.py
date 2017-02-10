@@ -11,6 +11,21 @@
 ## |
 #######################################################################
 
+bl_info = {
+    "name": "Generate implicit mesh",
+    "description": "Generate implicit mesh",
+    "author": "Hokum",
+    "version": (0, 1),
+    "blender": (2, 78, 0),
+    "location": "View3D > Add > Mesh",
+    "warning": "", # used for warning icon and text in addons panel
+    "wiki_url": "",
+    "tracker_url": "",
+    "support": "COMMUNITY",
+    "category": "Add Mesh"
+    }
+
+
 import bpy
 import json
 import io
@@ -181,7 +196,9 @@ class GenImplicit(bpy.types.Panel):
 	     
 
 
-def genImplicitProperties(scn):
+
+
+def genImplicitProperties():
 
 #   bpy.types.Scene.mesh_quality_draft = FloatProperty(
 #        name = "Mesh quality draft" 
@@ -208,27 +225,37 @@ def genImplicitProperties(scn):
         )
 
 
-
+   working_directory_default = "/tmp/"
    bpy.types.Scene.working_directory = StringProperty(
-         name = "Working directory")
-   scn['working_directory'] = "/tmp/"
+         name = "Working directory"
+         ,default = working_directory_default
+         )
+   #scn['working_directory'] = "/tmp/"
 
    bpy.types.Scene.json_file = StringProperty(
-         name = "Json file")
-   scn['json_file'] = "data.json"
+         name = "Json file"
+         ,default = "data.json"
+         )
+   #scn['json_file'] = "data.json"
 
    bpy.types.Scene.stl_file = StringProperty(
-         name = "stl file")
-   scn['stl_file'] = "data.stl"
+         name = "stl file"
+         ,default = "data.stl"
+         )
+   #scn['stl_file'] = "data.stl"
 
    bpy.types.Scene.name_of_import = StringProperty(
-         name = "Name of import")
-   scn['name_of_import'] = "Data"
+         name = "Name of import"
+         ,default = "Data"
+         )
+   #scn['name_of_import'] = "Data"
 
    bpy.types.Scene.export_groups = StringProperty(
          name = "Export groups"
-        ,description = "Groups are supposed to be in text datablock the name of which you should enter")
-   scn['export_groups'] = scn['working_directory'] + "export_groups"
+        ,description = "Groups are supposed to be in text datablock the name of which you should enter"
+        ,default = working_directory_default + "export_groups"
+        )
+   #scn['export_groups'] = scn['working_directory'] + "export_groups"
 
 
    bpy.types.Scene.frame_start_ = IntProperty(
@@ -267,9 +294,35 @@ def genImplicitProperties(scn):
       )
 
    return
- 
-genImplicitProperties(bpy.context.scene)
 
+
+#class InitMyPropOperator(bpy.types.Operator):
+#    """Tooltip"""
+#    bl_idname = "scene.init_my_prop"
+#    bl_label = "Init my_prop"
+# 
+#    @classmethod
+#    def poll(cls, context):
+#        return context.active_object is not None
+# 
+#    def execute(self, context):
+#        if context.scene.my_prop != "initialized":
+#            context.scene.my_prop = "initialized"
+#            self.__class__.bl_label = "Change my_prop"
+#        else:
+#            context.scene.my_prop = "foobar"
+#            self.__class__.bl_label = self.bl_label
+#        return {'FINISHED'}
+
+ 
+def register():
+   bpy.utils.register_module(__name__)
+   genImplicitProperties()
+ 
+#genImplicitProperties(bpy.context.scene)
+
+if __name__ == "__main__":
+    register()
 
 
 class GEN_MESH_OT_GenImplicit(bpy.types.Operator):
@@ -315,7 +368,7 @@ class GEN_MESH_OT_GenImplicit_anim(bpy.types.Operator):
 
 
 
-bpy.utils.register_module(__name__)
+##bpy.utils.register_module(__name__)
 
 
 GenImplicit_exec   = 'GenImplicit' #must be in your $PATH
