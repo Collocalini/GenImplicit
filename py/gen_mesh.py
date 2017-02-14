@@ -112,9 +112,9 @@ def gen_implicit_render_handler_post(self):
    name_of_import     = scn.name_of_import
 
    bpy.ops.object.select_all(action='DESELECT')
-   bpy.ops.object.select_pattern(pattern=name_of_import)
-   bpy.ops.object.delete() 
-
+   bpy.ops.object.select_pattern(pattern=name_of_import) 
+   bpy.ops.object.delete()                              
+   #print("xxxxxxxxxxxdddddddddddddddd")
 
 
 
@@ -149,7 +149,7 @@ def render_ready_callback___():
 
       bpy.app.handlers.render_pre.remove( gen_implicit_render_handler_pre )
 
-      bpy.app.handlers.render_post.remove( gen_implicit_render_handler_post ())
+      bpy.app.handlers.render_post.remove( gen_implicit_render_handler_post)
 
 
 
@@ -296,6 +296,36 @@ def genImplicitProperties():
    return
 
 
+
+def genImplicitProperties_del():
+
+   del bpy.types.Scene.mesh_quality_full
+
+   del bpy.types.Scene.overall_rounding 
+
+   del bpy.types.Scene.working_directory 
+
+   del bpy.types.Scene.json_file 
+
+   del bpy.types.Scene.stl_file 
+
+   del bpy.types.Scene.name_of_import 
+
+   del bpy.types.Scene.export_groups 
+
+   del bpy.types.Scene.frame_start_ 
+
+   del bpy.types.Scene.frame_end_ 
+
+   del bpy.types.Scene.json_only 
+
+   del bpy.types.Scene.render_ready 
+
+   return
+
+
+
+
 #class InitMyPropOperator(bpy.types.Operator):
 #    """Tooltip"""
 #    bl_idname = "scene.init_my_prop"
@@ -318,7 +348,11 @@ def genImplicitProperties():
 def register():
    bpy.utils.register_module(__name__)
    genImplicitProperties()
- 
+
+def unregister():
+    bpy.utils.unregister_module(__name__)
+    genImplicitProperties_del()
+
 #genImplicitProperties(bpy.context.scene)
 
 if __name__ == "__main__":
