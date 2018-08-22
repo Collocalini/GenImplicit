@@ -30,20 +30,20 @@ data BlenderObject =
   BlenderObject { name  :: !T.Text
                  ,type_ :: !T.Text
                  ,group :: ![T.Text]
-                 ,rounding :: Float
-                 ,x     :: Float
-                 ,y     :: Float
-                 ,z     :: Float
-                 ,dim_x     :: Float
-                 ,dim_y     :: Float
-                 ,dim_z     :: Float
-                 ,scale_x     :: Float
-                 ,scale_y     :: Float
-                 ,scale_z     :: Float
-                 ,rot_x     :: Float
-                 ,rot_y     :: Float
-                 ,rot_z     :: Float
-                 ,rot_w     :: Float
+                 ,rounding :: Double
+                 ,x     :: Double
+                 ,y     :: Double
+                 ,z     :: Double
+                 ,dim_x     :: Double
+                 ,dim_y     :: Double
+                 ,dim_z     :: Double
+                 ,scale_x     :: Double
+                 ,scale_y     :: Double
+                 ,scale_z     :: Double
+                 ,rot_x     :: Double
+                 ,rot_y     :: Double
+                 ,rot_z     :: Double
+                 ,rot_w     :: Double
                 } deriving (Show,Generic)
 
 data BlenderData =
@@ -65,8 +65,5 @@ instance ToJSON BlenderData
 
 data Generation_settings = Generation_settings
    {
-    overall_union_rounding :: Float
+    overall_union_rounding :: Double
    }
-
-
-

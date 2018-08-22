@@ -135,15 +135,15 @@ process_group (group_name, b) = do
 
 
 data Group_settings =
-     Group_settings {group_rounding :: Float}
-    |Radius Float
+     Group_settings {group_rounding :: Double}
+    |Radius Double
     |Rubbish
     deriving (Show)
 
 
 group_settings = Group_settings {group_rounding=0}
 
-give_rounding_radius :: [Group_settings] -> Float
+give_rounding_radius :: [Group_settings] -> Double
 give_rounding_radius g = (\(Radius x)-> x) $ M.fromMaybe (Radius 0) $ L.find is_radius g
    where
    is_radius :: Group_settings -> Bool
