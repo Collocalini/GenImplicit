@@ -32,8 +32,8 @@ import qualified Data.Map as DMap
 data InputArguments = InputArguments {
     json_import_file :: Maybe FilePath
    ,stl_export_file  :: Maybe FilePath
-   ,mesh_quality     :: Maybe Float
-   ,overall_union_rounding :: Maybe Float
+   ,mesh_quality     :: Maybe Double
+   ,overall_union_rounding :: Maybe Double
    }
 
 
@@ -50,7 +50,7 @@ inputArgs tm = InputArguments {
   file_argument :: String -> String -> Maybe FilePath
   file_argument argument_name default_value = argument argument_name default_value
 
-  float_argument :: String -> String -> Maybe Float
+  --float_argument :: String -> String -> Maybe Float
   float_argument argument_name default_value = try_read $ argument argument_name default_value
     where
     try_read Nothing = Nothing
@@ -130,4 +130,3 @@ list_arguments (tag:rest)
         |rest' /= [] = tail rest'
         |otherwise = []
 ----------------------------------------------------
-
