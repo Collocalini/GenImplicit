@@ -198,9 +198,11 @@ make_object b@(BlenderObject {type_="Cube"})     = make_cube b
 make_object b@(BlenderObject {type_="rect3d"})   = make_cube b
 make_object b@(BlenderObject {type_="Sphere"})   = make_sphere b
 make_object b@(BlenderObject {type_="Cylinder"}) = make_cylinder b
+make_object b@(BlenderObject {type_="Cone"})     = make_cone b
 make_object b@(BlenderObject {type_="cube"})     = make_cube b
 make_object b@(BlenderObject {type_="sphere"})   = make_sphere b
 make_object b@(BlenderObject {type_="cylinder"}) = make_cylinder b
+make_object b@(BlenderObject {type_="cone"})     = make_cone b
 make_object b@(BlenderObject {type_= _ })        = make_sphere b
 
 
@@ -273,21 +275,21 @@ make_cylinder b@(BlenderObject {x =x
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+make_cone :: BlenderObject -> Log (Maybe I.SymbolicObj3)
+make_cone b@(BlenderObject {x =x
+                               ,y =y
+                               ,z =z
+                               ,scale_x=sx
+                               ,scale_y=sy
+                               ,scale_z=sz
+                               ,rot_x=rx
+                               ,rot_y=ry
+                               ,rot_z=rz
+                               ,rot_w=rw
+                               })
+   | input_is_allright = return $ Just $ I.translate (x, y, z) $ IP.rotate3V (rw)  (rx,  ry, rz) $
+                           I.scale (sx, sy, sz) $ I.cylinder2 1 0 2
+   |otherwise = do W.tell ["Invalid argument in make_cone: " , (B.pack $ show b)]
+                   return Nothing
+   where
+      input_is_allright = (sx >= 0) && (sy >= 0) && (sz >= 0)
