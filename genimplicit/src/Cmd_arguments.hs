@@ -31,7 +31,9 @@ import qualified Data.Map as DMap
 
 data InputArguments = InputArguments {
     json_import_file :: Maybe FilePath
+   ,escad_import_file :: Maybe FilePath
    ,stl_export_file  :: Maybe FilePath
+   ,escad_export_file :: Maybe FilePath
    ,mesh_quality     :: Maybe Double
    ,overall_union_rounding :: Maybe Double
    }
@@ -42,7 +44,9 @@ data InputArguments = InputArguments {
 inputArgs :: DMap.Map String String -> InputArguments
 inputArgs tm = InputArguments {
    json_import_file = argument   argument_json_import_file   default_json_import_file
+  ,escad_import_file = argument  argument_escad_import_file  default_escad_import_file
   ,stl_export_file  = argument   argument_stl_export_file    default_stl_export_file
+  ,escad_export_file = argument  argument_escad_export_file  default_escad_export_file
   ,mesh_quality     = float_argument   argument_mesh_quality    default_mesh_quality
   ,overall_union_rounding = float_argument   argument_overall_union_rounding   default_overall_union_rounding
   }
@@ -71,8 +75,14 @@ inputArgs tm = InputArguments {
 argument_json_import_file = "json-import-file"
 default_json_import_file  = ""
 
+argument_escad_import_file = "escad-import-file"
+default_escad_import_file  = ""
+
 argument_stl_export_file  = "stl-export-file"
 default_stl_export_file   = ""
+
+argument_escad_export_file  = "escad-export-file"
+default_escad_export_file   = ""
 
 argument_mesh_quality     = "mesh-quality"
 default_mesh_quality      = "1"
@@ -86,7 +96,9 @@ flags = [
 
 options =  [
             argument_json_import_file
+           ,argument_escad_import_file
            ,argument_stl_export_file
+           ,argument_escad_export_file
            ,argument_mesh_quality
            ,argument_overall_union_rounding
            ]
@@ -97,7 +109,9 @@ tag_DMap:: [String] -> DMap.Map String String
 tag_DMap [] = DMap.fromList [
         --("",""),
     (argument_json_import_file,       default_json_import_file)
+   ,(argument_escad_import_file,      default_escad_import_file)
    ,(argument_stl_export_file,        default_stl_export_file)
+   ,(argument_escad_export_file,      default_escad_export_file)
    ,(argument_mesh_quality,           default_mesh_quality)
    ,(argument_overall_union_rounding, default_overall_union_rounding)
    ]----]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]

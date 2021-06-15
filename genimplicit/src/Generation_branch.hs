@@ -15,11 +15,12 @@
 
 module Generation_branch (
  render
---,spread_by_groupes
+,spread_by_groupes
+,group_name_parser
 --,render_groups_together
 --,render_groups_togetherR
 --,process_all_groups
-
+,Log(..)
 
 
 ) where
