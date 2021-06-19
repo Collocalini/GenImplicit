@@ -251,8 +251,9 @@ rotate3V a (rx,  ry, rz) = T.concat
 
 
 cube r (x,y,z) = T.concat 
-            [  "cube(r=",T.pack $ show r
-           ,  " , size=[", T.pack $ show x, ", ", T.pack $ show y, ", "
+            ["cube(r=",T.pack $ show r
+            ," , center=true "
+            ," , size=[", T.pack $ show x, ", ", T.pack $ show y, ", "
                         ,T.pack $ show z,"]);"]
 
 sphere r = T.concat ["sphere(",T.pack $ show r, ");"]
